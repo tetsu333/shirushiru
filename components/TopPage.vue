@@ -1,7 +1,7 @@
 <template>
   <div>
     <div style="margin-top: 10px;">
-      <button @click="captureAndSendToOpenAI" :disabled="!stream">撮影してOpenAIに送信</button>
+      <button @click="captureAndSendToOpenAI" :disabled="!stream">ボタン</button>
     </div>
     <video ref="video" autoplay playsinline width="100%" />
   </div>
