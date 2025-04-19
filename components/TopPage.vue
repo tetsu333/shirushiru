@@ -12,6 +12,7 @@ import { ref, onMounted } from 'vue'
 
 const video = ref(null)
 const stream = ref(null)
+const preferredVoice = ref(null)
 
 const isMobile = () => /iPhone|Android.+Mobile/.test(navigator.userAgent)
 
@@ -29,16 +30,14 @@ const startCamera = async () => {
   }
 }
 
-onMounted(() => {
-  startCamera()
-  if (speechSynthesis.getVoices().length > 0) {
-    initVoices()
-  } else {
-    speechSynthesis.onvoiceschanged = () => {
-      initVoices()
-    }
-  }
-})
+const initVoices = () => {
+  const voices = speechSynthesis.getVoices()
+  console.log('利用可能な音声:', voices)
+
+  preferredVoice.value = voices.find(
+    (v) => v.lang === 'ja-JP' && v.name.includes('Hattori')
+  )
+}
 
 const speakText = (text) => {
   if (!window.speechSynthesis) {
@@ -49,15 +48,8 @@ const speakText = (text) => {
   const utterance = new SpeechSynthesisUtterance(text)
   utterance.lang = 'ja-JP'
 
-  // 利用可能な音声を取得
-  const voices = speechSynthesis.getVoices()
-  console.log('利用可能な音声:', voices)
-  const preferredVoice = voices.find(
-    (v) => v.lang === 'ja-JP' && v.name.includes('Hattori')
-  )
-
-  if (preferredVoice) {
-    utterance.voice = preferredVoice
+  if (preferredVoice.value) {
+    utterance.voice = preferredVoice.value
   }
 
   speechSynthesis.speak(utterance)
@@ -134,4 +126,11 @@ const captureAndSendToOpenAI = async () => {
     alert('送信エラー: ' + err.message)
   }
 }
+
+onMounted(() => {
+  startCamera()
+  speechSynthesis.onvoiceschanged = () => {
+    initVoices()
+  }
+})
 </script>
