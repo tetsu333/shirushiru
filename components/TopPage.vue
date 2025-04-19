@@ -56,6 +56,7 @@ const speakText = (text) => {
 }
 
 const captureAndSendToOpenAI = async () => {
+  alert('送信中...')
   const videoEl = video.value
   if (!videoEl) return
 
@@ -84,6 +85,7 @@ const captureAndSendToOpenAI = async () => {
 
   // OpenAI APIへ送信
   try {
+    alert('送信準備ができました')
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -120,6 +122,7 @@ const captureAndSendToOpenAI = async () => {
     const result = await response.json()
 
     const aiText = result.choices[0]?.message?.content
+    alert('AIからの応答: ' + aiText)
     console.log(aiText)
     speakText(aiText)
   } catch (err) {
@@ -132,5 +135,6 @@ onMounted(() => {
   speechSynthesis.onvoiceschanged = () => {
     initVoices()
   }
+  alert('カメラを起動しました。')
 })
 </script>
