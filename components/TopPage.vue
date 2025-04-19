@@ -1,9 +1,9 @@
 <template>
   <div>
+    <video ref="video" autoplay playsinline width="100%" />
     <div style="margin-top: 10px;">
       <button @touchstart="captureAndSendToOpenAI" @click="captureAndSendToOpenAI" :disabled="!stream">押す</button>
     </div>
-    <video ref="video" autoplay playsinline width="100%" />
   </div>
 </template>
 
