@@ -2,7 +2,7 @@
   <div>
     <video ref="video" autoplay playsinline width="100%" />
     <div style="margin-top: 10px;">
-      <button @touchstart="captureAndSendToOpenAI" @click="captureAndSendToOpenAI" :disabled="!stream">押す</button>
+      <button @touchstart="captureAndSendToOpenAI" @click="captureAndSendToOpenAI" :disabled="!stream || isButtonDisabled">押す</button>
     </div>
   </div>
 </template>
@@ -13,6 +13,7 @@ import { ref, onMounted } from 'vue'
 const video = ref(null)
 const stream = ref(null)
 const preferredVoice = ref(null)
+const isButtonDisabled = ref(false)
 
 const isMobile = () => /iPhone|Android.+Mobile/.test(navigator.userAgent)
 
@@ -62,6 +63,8 @@ const captureAndSendToOpenAI = async () => {
 
   const videoEl = video.value
   if (!videoEl) return
+
+  isButtonDisabled.value = true
 
   // 元のvideoサイズを取得
   const originalWidth = videoEl.videoWidth
@@ -128,6 +131,8 @@ const captureAndSendToOpenAI = async () => {
     speakText(aiText)
   } catch (err) {
     alert('送信エラー: ' + err.message)
+  } finally {
+    isButtonDisabled.value = false
   }
 }
 
