@@ -129,7 +129,6 @@ const toggleRecognition = () => {
     recognition.stop()
     isRecognizing.value = false
   } else {
-    transcript.value = ''
     recognition.start()
     isRecognizing.value = true
   }
