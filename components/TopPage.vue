@@ -48,6 +48,7 @@ const speakText = (text) => {
   const utterance = new SpeechSynthesisUtterance(text)
   utterance.lang = 'ja-JP'
 
+  console.log(preferredVoice.value)
   if (preferredVoice.value) {
     utterance.voice = preferredVoice.value
   }
@@ -107,7 +108,7 @@ const captureAndSendToOpenAI = async () => {
               },
               {
                 type: 'text',
-                text: '何が写っているか教えてください。'
+                text: '何が写っているか教えてください。その際、「この画像は」のような文頭の言葉は不要です。私の目の代わりになって写っているものを教えてください。'
               }
             ]
           }
