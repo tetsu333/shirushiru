@@ -1,9 +1,9 @@
 <template>
   <div>
     <video ref="video" autoplay playsinline width="100%" />
-    <div style="margin-top: 10px;">
-      <button @touchstart="captureAndSendToOpenAI" @click="captureAndSendToOpenAI" :disabled="!stream || isButtonDisabled">押す</button>
-    </div>
+    <button @click="toggleRecognition">
+      {{ isRecognizing ? '停止' : '音声認識開始' }}
+    </button>
   </div>
 </template>
 
@@ -13,7 +13,9 @@ import { ref, onMounted } from 'vue'
 const video = ref(null)
 const stream = ref(null)
 const preferredVoice = ref(null)
-const isButtonDisabled = ref(false)
+const isRecognizing = ref(false)
+const transcript = ref('')
+let recognition = null
 
 const isMobile = () => /iPhone|Android.+Mobile/.test(navigator.userAgent)
 
@@ -57,14 +59,15 @@ const speakText = (text) => {
   speechSynthesis.speak(utterance)
 }
 
-const captureAndSendToOpenAI = async () => {
+const captureAndSendToOpenAI = async (t) => {
   const dummyUtterance = new SpeechSynthesisUtterance('')
   speechSynthesis.speak(dummyUtterance)
 
+  // 入力音声を表示
+  console.log(t)
+
   const videoEl = video.value
   if (!videoEl) return
-
-  isButtonDisabled.value = true
 
   // 元のvideoサイズを取得
   const originalWidth = videoEl.videoWidth
@@ -111,7 +114,7 @@ const captureAndSendToOpenAI = async () => {
               },
               {
                 type: 'text',
-                text: '何が写っているか教えてください。その際、「この画像は」のような文頭の言葉は不要です。私の目の代わりになって写っているものを教えてください。'
+                text: t
               }
             ]
           }
@@ -131,8 +134,22 @@ const captureAndSendToOpenAI = async () => {
     speakText(aiText)
   } catch (err) {
     alert('送信エラー: ' + err.message)
-  } finally {
-    isButtonDisabled.value = false
+  }
+}
+
+// ボタンクリックで開始／停止
+const toggleRecognition = () => {
+  if (!recognition) {
+    alert('このブラウザはWeb Speech APIに対応していません')
+    return
+  }
+  if (isRecognizing.value) {
+    recognition.stop()
+    isRecognizing.value = false
+  } else {
+    transcript.value = ''
+    recognition.start()
+    isRecognizing.value = true
   }
 }
 
@@ -140,6 +157,26 @@ onMounted(() => {
   startCamera()
   speechSynthesis.onvoiceschanged = () => {
     initVoices()
+  }
+  try {
+    recognition = new window.webkitSpeechRecognition()
+    recognition.lang = 'ja-JP'
+    recognition.continuous = false
+    recognition.interimResults = false
+
+    // 認識結果を取得
+    recognition.onresult = (event) => {
+      const text = event.results[0][0].transcript
+      transcript.value = text
+    }
+
+    // 終了時フラグを戻して、音声を送信
+    recognition.onend = () => {
+      isRecognizing.value = false
+      captureAndSendToOpenAI(transcript.value)
+    }
+  } catch (error) {
+    console.error('Web Speech APIが利用できません:', error)
   }
 })
 </script>
