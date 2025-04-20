@@ -1,7 +1,7 @@
 <template>
   <div>
     <video ref="video" autoplay playsinline width="100%" />
-    <button @click="toggleRecognition" :disabled="isButtonDisabled">
+    <button @click="toggleRecognition">
       {{ isRecognizing ? '停止' : '音声認識開始' }}
     </button>
   </div>
@@ -10,7 +10,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 
-const isButtonDisabled = ref(false)
 const video = ref(null)
 const stream = ref(null)
 const isRecognizing = ref(false)
@@ -46,8 +45,6 @@ const speakText = (text) => {
 }
 
 const captureAndSendToOpenAI = async (t) => {
-  isButtonDisabled.value = true
-
   // 入力音声を表示
   console.log(t)
 
@@ -99,7 +96,7 @@ const captureAndSendToOpenAI = async (t) => {
               },
               {
                 type: 'text',
-                text: '日本語で答えてください。' + t
+                text: t
               }
             ]
           }
@@ -119,8 +116,6 @@ const captureAndSendToOpenAI = async (t) => {
     speakText(aiText)
   } catch (err) {
     alert('送信エラー: ' + err.message)
-  } finally {
-    isButtonDisabled.value = false
   }
 }
 
