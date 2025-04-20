@@ -46,6 +46,8 @@ const speakText = (text) => {
 }
 
 const captureAndSendToOpenAI = async (t) => {
+  isButtonDisabled.value = true
+
   // 入力音声を表示
   console.log(t)
 
@@ -126,8 +128,6 @@ const captureAndSendToOpenAI = async (t) => {
 const toggleRecognition = () => {
   const dummyUtterance = new SpeechSynthesisUtterance('')
   speechSynthesis.speak(dummyUtterance)
-
-  isButtonDisabled.value = true
 
   if (!recognition) {
     alert('このブラウザはWeb Speech APIに対応していません')
