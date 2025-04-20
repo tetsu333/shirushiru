@@ -12,7 +12,6 @@ import { ref, onMounted } from 'vue'
 
 const video = ref(null)
 const stream = ref(null)
-const preferredVoice = ref(null)
 const isRecognizing = ref(false)
 const transcript = ref('')
 let recognition = null
@@ -33,15 +32,6 @@ const startCamera = async () => {
   }
 }
 
-const initVoices = () => {
-  const voices = speechSynthesis.getVoices()
-  console.log('利用可能な音声:', voices)
-
-  preferredVoice.value = voices.find(
-    (v) => v.lang === 'ja-JP' && v.name.includes('Hattori')
-  )
-}
-
 const speakText = (text) => {
   if (!window.speechSynthesis) {
     alert("このブラウザは音声読み上げに対応していません。")
@@ -51,18 +41,10 @@ const speakText = (text) => {
   const utterance = new SpeechSynthesisUtterance(text)
   utterance.lang = 'ja-JP'
 
-  console.log(preferredVoice.value)
-  if (preferredVoice.value) {
-    utterance.voice = preferredVoice.value
-  }
-
   speechSynthesis.speak(utterance)
 }
 
 const captureAndSendToOpenAI = async (t) => {
-  const dummyUtterance = new SpeechSynthesisUtterance('')
-  speechSynthesis.speak(dummyUtterance)
-
   // 入力音声を表示
   console.log(t)
 
@@ -139,6 +121,9 @@ const captureAndSendToOpenAI = async (t) => {
 
 // ボタンクリックで開始／停止
 const toggleRecognition = () => {
+  const dummyUtterance = new SpeechSynthesisUtterance('')
+  speechSynthesis.speak(dummyUtterance)
+
   if (!recognition) {
     alert('このブラウザはWeb Speech APIに対応していません')
     return
@@ -155,9 +140,7 @@ const toggleRecognition = () => {
 
 onMounted(() => {
   startCamera()
-  speechSynthesis.onvoiceschanged = () => {
-    initVoices()
-  }
+
   try {
     recognition = new window.webkitSpeechRecognition()
     recognition.lang = 'ja-JP'
