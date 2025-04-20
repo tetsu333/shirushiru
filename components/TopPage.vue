@@ -46,7 +46,7 @@ const speakText = (text) => {
 
 const captureAndSendToOpenAI = async (t) => {
   // 入力音声を表示
-  console.log(t)
+  alert(t)
 
   const videoEl = video.value
   if (!videoEl) return
