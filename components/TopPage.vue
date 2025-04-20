@@ -1,7 +1,7 @@
 <template>
   <div>
     <video ref="video" autoplay playsinline width="100%" />
-    <button @click="toggleRecognition">
+    <button @click="toggleRecognition" :disabled="isButtonDisabled">
       {{ isRecognizing ? '停止' : '音声認識開始' }}
     </button>
   </div>
@@ -10,6 +10,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 
+const isButtonDisabled = ref(false)
 const video = ref(null)
 const stream = ref(null)
 const isRecognizing = ref(false)
@@ -116,6 +117,8 @@ const captureAndSendToOpenAI = async (t) => {
     speakText(aiText)
   } catch (err) {
     alert('送信エラー: ' + err.message)
+  } finally {
+    isButtonDisabled.value = false
   }
 }
 
@@ -123,6 +126,8 @@ const captureAndSendToOpenAI = async (t) => {
 const toggleRecognition = () => {
   const dummyUtterance = new SpeechSynthesisUtterance('')
   speechSynthesis.speak(dummyUtterance)
+
+  isButtonDisabled.value = true
 
   if (!recognition) {
     alert('このブラウザはWeb Speech APIに対応していません')
