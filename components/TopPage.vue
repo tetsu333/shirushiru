@@ -96,7 +96,7 @@ const captureAndSendToOpenAI = async (t) => {
               },
               {
                 type: 'text',
-                text: t
+                text: '日本語で答えてください。' + t
               }
             ]
           }
