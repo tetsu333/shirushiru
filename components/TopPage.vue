@@ -44,10 +44,7 @@ const speakText = (text) => {
   speechSynthesis.speak(utterance)
 }
 
-const captureAndSendToOpenAI = async (t) => {
-  // 入力音声を表示
-  console.log(t)
-
+const captureAndSendToOpenAI = async () => {
   const videoEl = video.value
   if (!videoEl) return
 
@@ -96,7 +93,7 @@ const captureAndSendToOpenAI = async (t) => {
               },
               {
                 type: 'text',
-                text: '日本語で答えてください。' + t
+                text: '日本語で答えてください。' + transcript.value
               }
             ]
           }
@@ -156,8 +153,7 @@ onMounted(() => {
     // 終了時フラグを戻して、音声を送信
     recognition.onend = () => {
       isRecognizing.value = false
-      alert(transcript.value)
-      captureAndSendToOpenAI(transcript.value)
+      captureAndSendToOpenAI()
     }
   } catch (error) {
     console.error('Web Speech APIが利用できません:', error)
