@@ -46,7 +46,7 @@ const speakText = (text) => {
 
 const captureAndSendToOpenAI = async (t) => {
   // 入力音声を表示
-  alert(t)
+  console.log(t)
 
   const videoEl = video.value
   if (!videoEl) return
@@ -156,6 +156,7 @@ onMounted(() => {
     // 終了時フラグを戻して、音声を送信
     recognition.onend = () => {
       isRecognizing.value = false
+      alert(transcript.value)
       captureAndSendToOpenAI(transcript.value)
     }
   } catch (error) {
