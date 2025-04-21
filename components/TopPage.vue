@@ -12,11 +12,10 @@
 import { ref, onMounted } from 'vue'
 
 const isButtonDisabled = ref(false)
-const video = ref(null)
-const stream = ref(null)
 const isRecognizing = ref(false)
 const transcript = ref('')
-let recognition = null
+const video = ref(null)
+const stream = ref(null)
 
 const isMobile = () => /iPhone|Android.+Mobile/.test(navigator.userAgent)
 
@@ -122,52 +121,54 @@ const captureAndSendToOpenAI = async () => {
   }
 }
 
-// ボタンクリックで開始／停止
-const toggleRecognition = () => {
-  const dummyUtterance = new SpeechSynthesisUtterance('')
-  speechSynthesis.speak(dummyUtterance)
+const recorder = ref(null)
+const audioChunks = []
 
-  if (!recognition) {
-    alert('このブラウザはWeb Speech APIに対応していません')
-    return
+const startRecording = async () => {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+  recorder.value = new MediaRecorder(stream)
+
+  audioChunks.length = 0
+  recorder.value.ondataavailable = (e) => audioChunks.push(e.data)
+
+  recorder.value.onstop = async () => {
+    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' })
+
+    const formData = new FormData()
+    formData.append('file', audioBlob, 'audio.webm')
+    formData.append('model', 'whisper-1')
+    formData.append('language', 'ja')
+
+    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${useRuntimeConfig().public.OPENAI_API_KEY}`,
+      },
+      body: formData
+    })
+
+    const data = await response.json()
+    transcript.value = data.text
+    captureAndSendToOpenAI()
   }
-  if (isRecognizing.value) {
-    recognition.stop()
+
+  recorder.value.start()
+  isRecognizing.value = true
+}
+
+const stopRecording = () => {
+  if (recorder.value && recorder.value.state === 'recording') {
+    recorder.value.stop()
     isRecognizing.value = false
-  } else {
-    transcript.value = ''
-    recognition.start()
-    isRecognizing.value = true
+    isButtonDisabled.value = true
   }
+}
+
+const toggleRecognition = () => {
+  isRecognizing.value ? stopRecording() : startRecording()
 }
 
 onMounted(() => {
   startCamera()
-
-  try {
-    recognition = new window.webkitSpeechRecognition()
-    recognition.lang = 'ja-JP'
-    recognition.continuous = true
-    recognition.interimResults = false
-
-    // 認識結果を取得
-    recognition.onresult = ({results}) => {
-      const text = results[0][0].transcript
-      transcript.value = text
-    }
-
-    // 終了時フラグを戻す
-    recognition.onend = () => {
-      isRecognizing.value = false
-      if (transcript.value === '') {
-        alert('音声が認識されませんでした。もう一度お試しください。')
-      } else {
-        isButtonDisabled.value = true
-        captureAndSendToOpenAI()
-      }
-    }
-  } catch (error) {
-    console.error('Web Speech APIが利用できません:', error)
-  }
 })
 </script>
