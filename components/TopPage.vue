@@ -146,7 +146,7 @@ onMounted(() => {
   try {
     recognition = new window.webkitSpeechRecognition()
     recognition.lang = 'ja-JP'
-    recognition.continuous = false
+    recognition.continuous = true
     recognition.interimResults = false
 
     // 認識結果を取得
@@ -155,11 +155,15 @@ onMounted(() => {
       transcript.value = text
     }
 
-    // 終了時フラグを戻して、音声を送信
+    // 終了時フラグを戻す
     recognition.onend = () => {
-      isButtonDisabled.value = true
       isRecognizing.value = false
-      captureAndSendToOpenAI()
+      if (transcript.value === '') {
+        alert('音声が認識されませんでした。もう一度お試しください。')
+      } else {
+        isButtonDisabled.value = true
+        captureAndSendToOpenAI()
+      }
     }
   } catch (error) {
     console.error('Web Speech APIが利用できません:', error)
