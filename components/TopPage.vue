@@ -143,6 +143,12 @@ const stopRecording = () => {
   if (!recorder.value) return
   recorder.value.stopRecording(async () => {
     const audioBlob = recorder.value.getBlob()
+
+    const recorderStream = recorder.value.stream
+    if (recorderStream) {
+      recorderStream.getTracks().forEach(track => track.stop())
+    }
+
     isRecognizing.value = false
     isButtonDisabled.value = true
 
