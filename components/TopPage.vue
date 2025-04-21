@@ -9,6 +9,7 @@
 </template>
 
 <script setup>
+
 import { ref, onMounted } from 'vue'
 
 const isButtonDisabled = ref(false)
@@ -125,17 +126,28 @@ const recorder = ref(null)
 const audioChunks = []
 
 const startRecording = async () => {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-  recorder.value = new MediaRecorder(stream)
+  const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true })
 
-  audioChunks.length = 0
-  recorder.value.ondataavailable = (e) => audioChunks.push(e.data)
+  recorder.value = new window.RecordRTC(audioStream, {
+    type: 'audio',
+    mimeType: 'audio/wav',
+    recorderType: window.RecordRTC.StereoAudioRecorder,
+    desiredSampRate: 16000
+  })
 
-  recorder.value.onstop = async () => {
-    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' })
+  recorder.value.startRecording()
+  isRecognizing.value = true
+}
+
+const stopRecording = () => {
+  if (!recorder.value) return
+  recorder.value.stopRecording(async () => {
+    const audioBlob = recorder.value.getBlob()
+    isRecognizing.value = false
+    isButtonDisabled.value = true
 
     const formData = new FormData()
-    formData.append('file', audioBlob, 'audio.webm')
+    formData.append('file', audioBlob, 'voice.wav')
     formData.append('model', 'whisper-1')
     formData.append('language', 'ja')
 
@@ -150,18 +162,7 @@ const startRecording = async () => {
     const data = await response.json()
     transcript.value = data.text
     captureAndSendToOpenAI()
-  }
-
-  recorder.value.start()
-  isRecognizing.value = true
-}
-
-const stopRecording = () => {
-  if (recorder.value && recorder.value.state === 'recording') {
-    recorder.value.stop()
-    isRecognizing.value = false
-    isButtonDisabled.value = true
-  }
+  })
 }
 
 const toggleRecognition = () => {

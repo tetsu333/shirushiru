@@ -6,5 +6,15 @@ export default defineNuxtConfig({
     public: {
       OPENAI_API_KEY: process.env.NUXT_PUBLIC_OPENAI_API_KEY
     }
+  },
+  app: {
+    head: {
+      script: [
+        {
+          src: 'https://cdn.webrtc-experiment.com/RecordRTC.js',
+          defer: true
+        }
+      ]
+    }
   }
 })
