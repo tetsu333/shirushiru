@@ -166,6 +166,9 @@ const stopRecording = () => {
 }
 
 const toggleRecognition = () => {
+  const dummyUtterance = new SpeechSynthesisUtterance('')
+  speechSynthesis.speak(dummyUtterance)
+
   isRecognizing.value ? stopRecording() : startRecording()
 }
 
