@@ -73,7 +73,7 @@ const captureAndSendToOpenAI = async () => {
 
   const OPENAI_API_KEY = useRuntimeConfig().public.OPENAI_API_KEY
 
-  transcript.value = '日本語で答えてください。なお、返事に「日本語で答えます」や「この画像は」のような前置きは必要ありません。' + transcript.value
+  transcript.value = '日本語で答えてください。なお、返事に「日本語で答えます」や「この画像は」のような前置きは必要ありません。私の目の代わりになったつもりで画像について次の問いに答えてください。' + transcript.value
 
   // OpenAI APIへ送信
   try {
