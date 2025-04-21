@@ -4,7 +4,7 @@
     <button @click="toggleRecognition" :disabled="isButtonDisabled">
       {{ isRecognizing ? '停止' : '音声認識開始' }}
     </button>
-    <div v-if="transcript">認識結果: {{ transcript }}</div>
+    <div v-if="transcript">プロンプト: {{ transcript }}</div>
   </div>
 </template>
 
@@ -151,8 +151,8 @@ onMounted(() => {
     recognition.interimResults = false
 
     // 認識結果を取得
-    recognition.onresult = (event) => {
-      const text = event.results[0][0].transcript
+    recognition.onresult = ({results}) => {
+      const text = results[0][0].transcript
       transcript.value = text
     }
 
