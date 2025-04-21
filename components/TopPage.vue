@@ -93,7 +93,7 @@ const captureAndSendToOpenAI = async () => {
               },
               {
                 type: 'text',
-                text: '日本語で答えてください。' + transcript.value
+                text: '日本語で答えてください。なお、返事に「日本語で答えます」や「この画像は」のような前置きは必要ありません。' + transcript.value
               }
             ]
           }
@@ -147,12 +147,12 @@ onMounted(() => {
     recognition.onresult = (event) => {
       const text = event.results[0][0].transcript
       transcript.value = text
+      captureAndSendToOpenAI()
     }
 
     // 終了時フラグを戻して、音声を送信
     recognition.onend = () => {
       isRecognizing.value = false
-      captureAndSendToOpenAI()
     }
   } catch (error) {
     console.error('Web Speech APIが利用できません:', error)
