@@ -1,15 +1,17 @@
 <template>
   <div>
     <video ref="video" autoplay playsinline width="100%" />
-    <button @click="toggleRecognition">
+    <button @click="toggleRecognition" :disabled="isButtonDisabled">
       {{ isRecognizing ? '停止' : '音声認識開始' }}
     </button>
+    <div v-if="transcript">認識結果: {{ transcript }}</div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 
+const isButtonDisabled = ref(false)
 const video = ref(null)
 const stream = ref(null)
 const isRecognizing = ref(false)
@@ -71,6 +73,8 @@ const captureAndSendToOpenAI = async () => {
 
   const OPENAI_API_KEY = useRuntimeConfig().public.OPENAI_API_KEY
 
+  transcript.value = '日本語で答えてください。なお、返事に「日本語で答えます」や「この画像は」のような前置きは必要ありません。' + transcript.value
+
   // OpenAI APIへ送信
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -93,7 +97,7 @@ const captureAndSendToOpenAI = async () => {
               },
               {
                 type: 'text',
-                text: '日本語で答えてください。なお、返事に「日本語で答えます」や「この画像は」のような前置きは必要ありません。' + transcript.value
+                text: transcript.value
               }
             ]
           }
@@ -113,6 +117,8 @@ const captureAndSendToOpenAI = async () => {
     speakText(aiText)
   } catch (err) {
     alert('送信エラー: ' + err.message)
+  } finally {
+    isButtonDisabled.value = false
   }
 }
 
@@ -147,12 +153,13 @@ onMounted(() => {
     recognition.onresult = (event) => {
       const text = event.results[0][0].transcript
       transcript.value = text
-      captureAndSendToOpenAI()
     }
 
     // 終了時フラグを戻して、音声を送信
     recognition.onend = () => {
+      isButtonDisabled.value = true
       isRecognizing.value = false
+      captureAndSendToOpenAI()
     }
   } catch (error) {
     console.error('Web Speech APIが利用できません:', error)
